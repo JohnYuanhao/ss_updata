@@ -34,6 +34,7 @@
             // 
             // btn1
             // 
+            this.btn1.Enabled = false;
             this.btn1.Location = new System.Drawing.Point(139, 10);
             this.btn1.Name = "btn1";
             this.btn1.Size = new System.Drawing.Size(55, 84);

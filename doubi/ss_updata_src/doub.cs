@@ -23,7 +23,7 @@ namespace doubi.doubi_src
         public doub()
         {
 
-            string pageHtml = web("https://doub.io/sszhfx/","");
+            string pageHtml = web("https://doub.io/sszhfx/");
 
             //FileStream file = new FileStream("", FileMode.Open);
             //file.Seek(0, SeekOrigin.Begin);

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -17,31 +18,30 @@ namespace lazy_tools
     public partial class Form1 : Form
     {
         public static double updata_begin = 2;//文件版本号
+        private string path;
+        private string Filepath = Environment.GetEnvironmentVariable("USERPROFILE") + "\\Documents\\Supdata\\setting.ini";
+
+        private Ini ini;
 
         public Form1()
         {
             InitializeComponent();
-            //C:\Windows\System32
-            string i = "aaa/naaa\naaa/raaa\raaa";
-            MessageBox.Show(i);
             setting();
+            ini = new Ini(@Filepath);
         }
-
-        private string path;
-        private string Filepath = Environment.GetEnvironmentVariable("USERPROFILE") + "\\Documents\\Supdata\\setting.ini";
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            if (!IsAdministrator())
-            {
-                MessageBox.Show("请使用管理员权限运行此程序！", "注意", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                this.Close();
-            }
-            else
-            {
-                if(string.IsNullOrEmpty(path))
-                path = exePath();
-            }
+            //if (!IsAdministrator())
+            //{
+            //    MessageBox.Show("请使用管理员权限运行此程序！", "注意", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            //    this.Close();
+            //}
+            //else
+            //{
+            //    if(string.IsNullOrEmpty(path))
+            //    path = exePath();
+            //}
         }
 
         /// <summary>
@@ -68,16 +68,17 @@ namespace lazy_tools
         /// </summary>
         private void setting()
         {
-
-            if (!File.Exists(@Filepath))
-            {
-                //Directory.CreateDirectory(@Filepath); //新建文件夹   
-                File.Create(@Filepath);
-            }
-            else
-            {
-                Read_setting();
-            }
+            
+                if (!File.Exists(@Filepath))
+                {
+                    //Directory.CreateDirectory(@Filepath); //新建文件夹   
+                    File.Create(@Filepath);
+                }
+                else
+                {
+                    Read_setting();
+                }
+           
 
 
 
@@ -87,7 +88,7 @@ namespace lazy_tools
         /// </summary>
         private void Read_setting()
         {
-            Ini ini = new Ini(@Filepath);
+            
             try
             {
                 if (ini.ReadValue("Name", "doubi") == "1")
@@ -97,37 +98,41 @@ namespace lazy_tools
                 if (ini.ReadValue("Name", "shadowsocks8")== "1")
                 {
                     clb1.SetItemChecked(clb1.Items.IndexOf("shadowsocks8"), true);
-                } 
+                }
+                path = ini.ReadValue("Setting", "Path");
             }
             catch { }
 
-            path = ini.ReadValue("Setting", "Path");
+            
         }
         /// <summary>
         /// 写入配置文件
         /// </summary>
         /// <param name="SSr"></param>
-        private void Add_setting(string[] SSr)
+        private bool Add_setting(string[] SSr)
         {
-            Ini ini = new Ini(@Filepath);
-            ini.Writue("Name", "doubi", "0");
-            ini.Writue("Name", "shadowsocks8", "0");
-            foreach (var item in SSr)
+            try
             {
-                ini.Writue("Name", item, "1");
-                // ini.Writue("Name", "key"+ Array.IndexOf(SSr,item) ,item);
+                ini.Writue("Name", "doubi", "0");
+                ini.Writue("Name", "shadowsocks8", "0");
+                foreach (var item in SSr)
+                {
+                    ini.Writue("Name", item, "1");
+                    // ini.Writue("Name", "key"+ Array.IndexOf(SSr,item) ,item);
+                }
+                ini.Writue("Setting", "Path", path);
+                return true;
             }
-            ini.Writue("Setting", "Path", path);
-
-
+            catch
+            {
+                return false;
+            }
         }
 
         private void Add_setting(string str)
         {
             Ini ini = new Ini(@Filepath);
             ini.Writue("Message", "note", path);
-
-
         }
 
         /// <summary>
@@ -151,12 +156,20 @@ namespace lazy_tools
                     list.Add(clb1.GetItemText(clb1.Items[i]));
                 }
             }
-            Add_setting(list.ToArray());
-            MessageBox.Show("成功");
+            if (Add_setting(list.ToArray()))
+            {
+                MessageBox.Show("成功");
+            }
+            else
+            {
+                errorMessage erm = new errorMessage();
+                erm.ShowDialog();
+            }
         }
 
         private void clb1_ItemCheck(object sender, ItemCheckEventArgs e)
         {
+            btn1.Enabled = true;
             if (btn1.Text == "添加")
                 btn1.Text = "修改";
             else

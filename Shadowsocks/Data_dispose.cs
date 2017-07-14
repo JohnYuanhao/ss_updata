@@ -1,6 +1,4 @@
-﻿using doubi.doubi_src;
-using Newtonsoft.Json;
-using Shadowsocks.Model;
+﻿using Newtonsoft.Json;
 using System;
 using System.Drawing;
 using System.IO;
@@ -10,80 +8,11 @@ using System.Windows.Forms;
 using ThoughtWorks.QRCode.Codec;
 using ThoughtWorks.QRCode.Codec.Data;
 
-namespace doubi
+namespace Shadowsocks
 {
-    class Program
+    class Data_dispose
     {
-
-        /// <summary>
-        /// 启动所有dll资源文件
-        /// </summary>
-        static System.Reflection.Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
-        {
-            string dllName = args.Name.Contains(",") ? args.Name.Substring(0, args.Name.IndexOf(',')) : args.Name.Replace(".dll", "");
-            dllName = dllName.Replace(".", "_");
-            if (dllName.EndsWith("_resources")) return null;
-            System.Resources.ResourceManager rm = new System.Resources.ResourceManager("doubi.Resources", System.Reflection.Assembly.GetExecutingAssembly());
-            byte[] bytes = (byte[])rm.GetObject(dllName);
-            return System.Reflection.Assembly.Load(bytes);
-        }
-        public static double updata_begin = 5;//文件版本号
-
-        private static string CONFIG_FILE = "gui-config.json";//配置文件
-
-        static void Main(string[] args)
-        {
-            //设置窗口标题
-            Console.Title = "SS免费节点 doub.io版 v" + updata_begin.ToString("0.0") + "                       by.Shadow-隐";
-            //启动资源文件
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-            //获取服务器软件版本
-            double updata_end = double.Parse(web("http://123.206.189.235/updata/doubi/doubi.txt", ""));
-            //获取软件公告
-            string updata_message = web("http://123.206.189.235/updata/doubi/doubi_message.txt", "gbk");
-            //判断公告是否已经出现过了
-            if (!Read_setting(updata_message))
-            {
-                MessageBox.Show(updata_message, "公告", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                Add_setting(updata_message);
-            }
-            //判断软件版本是否更新
-            if (updata_begin < updata_end)
-            {
-                if (MessageBox.Show("有新的版本可以更新，是否现在更新？\n\n网盘密码为1234", "更新检测", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                {
-                    System.Diagnostics.Process.Start("http://pan.baidu.com/s/1eSqTy18");
-                    return;
-                }
-            }
-
-            Console.WriteLine("========================================================");
-            Console.WriteLine("===                                                  ===");
-            Console.WriteLine("===              特别鸣谢http;//doub.io              ===");
-            Console.WriteLine("===      请将脚本跟shadowsocks放在同级目录下使用     ===");
-            Console.WriteLine("===  任何错误都可以用管理员权限或添加空白服务器解决  ===");
-            Console.WriteLine("=== 部分服务器可能出现维护现象，请选择其他服务器使用 ===");
-            Console.WriteLine("===                                                  ===");
-            Console.WriteLine("========================================================");
-            Console.WriteLine("正在获取doub.io节点");
-            //爬取网站内容并添加
-            doub dob = new doub();
-            for (int i = 0; i < dob.Doub_ssr.Count; i++)
-            {
-                string[] doub_ssr = (string[])dob.Doub_ssr[i];
-                if (write(doub_ssr[0].ToString(), doub_ssr[1].ToString()) == 0)
-                    break;
-                else
-                {
-                    Console.WriteLine("doub.io:已添加" + (i + 1) + "条节点");
-                    System.Threading.Thread.Sleep(500);
-                }
-
-            }
-
-            Console.WriteLine("节点添加结束，任意键关闭该窗口");
-            Console.ReadLine(); //让控制台暂停,否则一闪而过了   
-        }
+        private string CONFIG_FILE = "gui-config.json";//配置文件
 
         /// <summary>
         /// 写入配置文件
@@ -91,7 +20,7 @@ namespace doubi
         /// <param name="name">服务器名称</param>
         /// <param name="ssr">SS连接</param>
         /// <returns></returns>
-        public static int write(string name, string ssr)
+        public int write(string name, string ssr)
         {
             name = name ?? "未知";
             string time = DateTime.Now.ToString("H:mm MM-dd");
@@ -106,7 +35,7 @@ namespace doubi
 
                 using (StreamWriter sw = new StreamWriter(File.Open(CONFIG_FILE, FileMode.Create)))
                 {//读取并添加新的节点信息
-                    string jsonString = JsonConvert.SerializeObject("server", Formatting.Indented);
+                    string jsonString = JsonConvert.SerializeObject(server, Formatting.Indented);
                     jsonString = jsonString.Insert(jsonString.LastIndexOf("remarks") + notename.Length, name + " " + time);
                     string result2 = content.Insert(content.LastIndexOf("configs") + start.Length, ",");
                     string result = result2.Insert(result2.LastIndexOf("configs") + start.Length, jsonString);
@@ -122,14 +51,12 @@ namespace doubi
             }
         }
 
-
-
         /// <summary>
         /// 获取目标网页源代码
         /// </summary>
         /// <param name="web_src"></param>
         /// <returns></returns>
-        public static string web(string web_src, string encod="")
+        public static string web(string web_src, string encod= "UTF8")
         {
             try
             {
@@ -160,27 +87,6 @@ namespace doubi
         }
 
 
-        public static void console(string str)
-        {
-            //自定义颜色
-            Console.BackgroundColor = ConsoleColor.Green;
-            Console.WriteLine(str.PadRight(Console.BufferWidth - (str.Length % Console.BufferWidth))); //设置一整行的背景色
-        }
-
-
-        ///// <summary>
-        ///// 读取二维码
-        ///// 读取失败，返回空字符串
-        ///// </summary>
-        ///// <param name="filename">指定二维码图片位置</param>
-        //public static string read_img(string imageUri)
-        //{
-        //    BarcodeReader reader = new BarcodeReader();
-        //    Bitmap map = getbitmap(imageUri);
-        //    Result result = reader.Decode(map);
-        //    return result == null ? "" : result.Text;
-        //}
-
         /// <summary>
         /// 二维码解码
         /// </summary>
@@ -194,15 +100,12 @@ namespace doubi
             return decodedString;
         }
 
-
-
-
         /// <summary>
-        /// 获取网络二维码对象 
+        /// 获取网络图片流
         /// </summary>
         /// <param name="imageUri">网络二维码地址</param>
         /// <returns></returns>
-        public static Bitmap getbitmap(string imageUri)
+        public  Bitmap getbitmap(string imageUri)
         {
             Bitmap img = null;
             HttpWebRequest req;
@@ -219,13 +122,39 @@ namespace doubi
 
             catch (Exception ex)
             {
-                string aa = ex.Message;
+                string message = ex.Message;
             }
             finally
             {
                 res.Close();
             }
             return img;
+        }
+
+
+        
+
+
+        /// <summary>
+        /// 更新检查
+        /// </summary>
+        /// <param name="name">更新源网站名称(doubi|shadowsocks8|ishadowsocks)</param>
+        /// <param name="versions">版本号</param>
+        public void updata_check(string name,double versions)
+        {
+            //获取软件版本号
+            string web_location = "http://123.206.189.235/updata/" + name +"/" + name + ".txt";
+            //获取软件公告
+            string updata_message = web("http://123.206.189.235/updata/" + name + "/" + name + "_message.txt", "gbk");
+            double mark = double.Parse(web(web_location,""));
+            if (versions < mark)
+            {
+                if (MessageBox.Show("有新的版本可以更新，是否现在更新？\n\n网盘密码为1234", "更新检测", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    System.Diagnostics.Process.Start("http://pan.baidu.com/s/1eSqTy18");
+                    return;
+                }
+            }
         }
 
         /// <summary>
@@ -257,5 +186,6 @@ namespace doubi
             catch { }
             return false;
         }
+
     }
 }

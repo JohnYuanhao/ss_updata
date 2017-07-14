@@ -27,7 +27,7 @@ namespace ishadowsocks.ishadowsocks_src
 
         public ishadowsocks_data()
         {
-            string pageHtml = web("http://www.shadowsocks8.net/");
+            string pageHtml = web("http://free.shadowsocks8.org/");
             for (int i = 0; i < 3; i++)
             {
                 int IndexofA = pageHtml.IndexOf("<h3>");
@@ -37,7 +37,7 @@ namespace ishadowsocks.ishadowsocks_src
                 this.ishadowsocks_ssr[i][0] = Ru;
 
 
-                string str = "http://isx.yt/img/server0";
+                string str = "http://free.shadowsocks8.org/images/server0";
                 //string str = "http://www.shadowsocks8.com/images/server0";
                 str = str + (i + 1) + ".png";
                 //shadowsocks8_ssr[i][1] = web(str);

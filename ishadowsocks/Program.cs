@@ -31,11 +31,11 @@ namespace ishadowsocks
 
         static void Main(string[] args)
         {
-            double updata_begin = 1;//文件版本号
-            Console.Title = "SS免费节点 ishadowsocks版 v" + updata_begin.ToString("0.0") + "                       by.Shadow-隐";//设置窗口标题
+            double updata_begin = 7;//文件版本号
+            Console.Title = "SS免费节点 shadowsocks8-HK版 v" + updata_begin.ToString("0.0") + "                       by.Shadow-隐";//设置窗口标题
 
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-            double updata_end = double.Parse(web("http://123.206.189.235/updata/ishadowsocks.txt"));
+            double updata_end = double.Parse(web("http://123.206.189.235/updata/shadowsocks8/shadowsocks8-HK.txt"));
             if (updata_begin < updata_end)
             {
                 if (MessageBox.Show("有新的版本可以更新，是否现在更新？\n\n网盘密码为1234", "更新检测", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
@@ -47,34 +47,90 @@ namespace ishadowsocks
 
             Console.WriteLine("========================================================");
             Console.WriteLine("===                                                  ===");
-            Console.WriteLine("===        特别鸣谢http://www.ishadowsocks.com/      ===");
+            Console.WriteLine("===        特别鸣谢http://www.shadowsocks8.com/      ===");
             Console.WriteLine("===      请将脚本跟shadowsocks放在同级目录下使用     ===");
             Console.WriteLine("===  任何错误都可以用管理员权限或添加空白服务器解决  ===");
             Console.WriteLine("===                                                  ===");
             Console.WriteLine("========================================================");
-            Console.WriteLine("正在获取ishadowsocks节点");
+            Console.WriteLine("正在获取shadowsocks8节点");
             ishadowsocks_data sh8 = new ishadowsocks_data();
             for (int i = 0; i < sh8.iShadowsocks_ssr.Length; i++)
             {
                 if (write(sh8.iShadowsocks_ssr[i][0], sh8.iShadowsocks_ssr[i][1]) == 0)
-                    break;
-                else
                 {
-                    Console.WriteLine("ishadowsocks:已添加" + (i + 1) + "条节点");//节点名称
-                    System.Threading.Thread.Sleep(500);
+                   Console.WriteLine("节点添加失败，任意键关闭该窗口");//节点名称
+                    Console.ReadLine(); //让控制台暂停,否则一闪而过了   
+                }
+                //else
+                //{
+                //    Console.WriteLine("Shadowsocks8:已添加" + (i + 1) + "条节点");//节点名称
+                //    System.Threading.Thread.Sleep(500);
+                //}
+            }
+            //SaveRecord("aa");
+           
+
+        }
+
+        public static void SaveRecord(string content)
+        {
+            if (string.IsNullOrEmpty(content)) { return; }
+            FileStream fileStream = null;
+            StreamWriter streamWriter = null;
+            try
+            { //ApplicationBace在bin文件夹下Debug文件夹，或者Realease文件夹下 
+                string path = Path.Combine(System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase, string.Format("0:yyyyMMdd", DateTime.Now));
+                using (fileStream = new FileStream(@"log.log", FileMode.Append, FileAccess.Write))
+                {
+                    using (streamWriter = new StreamWriter(fileStream))
+                    {
+                        streamWriter.WriteLine(content);
+                        if (streamWriter != null)
+                        {
+                            streamWriter.Close();
+                        }
+                    }
+                }
+                if (fileStream != null)
+                {
+                    fileStream.Close();
                 }
             }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
-            Console.WriteLine("节点添加结束，任意键关闭该窗口");//节点名称
-            Console.ReadLine(); //让控制台暂停,否则一闪而过了   
+        public static bool write(string str)
+        {
+            string time = DateTime.Now.ToString("yyyy/M/d H:mm:ss");
+
+            try
+            {
+                using (StreamWriter sw = new StreamWriter(File.Open(@"log.log", FileMode.Create)))
+                {
+                    string error = time + "   " + str;
+                    sw.Write(error);
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
         }
 
 
-        public static int write(string name, string ssr)//写入配置文件（服务器名称，SS连接）
+        public static int write(string name, string ssr)
         {
-            name = name == null ? "未知" : name;
+            name = name ?? "未知";
+            string time = DateTime.Now.ToString("H:mm MM-dd");
             if (ssr == null)
                 return 0;
+            if(name.IndexOf("香港")>-1)
+            { 
             try
             {
                 var server = new Server(ssr);//解密SS连接
@@ -85,7 +141,7 @@ namespace ishadowsocks
                 using (StreamWriter sw = new StreamWriter(File.Open(CONFIG_FILE, FileMode.Create)))
                 {//读取并添加新的节点信息
                     string jsonString = JsonConvert.SerializeObject(server, Formatting.Indented);
-                    jsonString = jsonString.Insert(jsonString.LastIndexOf("remarks") + notename.Length, name);
+                    jsonString = jsonString.Insert(jsonString.LastIndexOf("remarks") + notename.Length, name + " " + time);
                     string result2 = content.Insert(content.LastIndexOf("configs") + start.Length, ",");
                     string result = result2.Insert(result2.LastIndexOf("configs") + start.Length, jsonString);
                     sw.Write(result);
@@ -98,8 +154,9 @@ namespace ishadowsocks
                 Console.WriteLine("出现未知错误，请手动添加一个空白服务器后重试");
                 return 0;
             }
+            }
+            return 2;
         }
-
 
 
 
