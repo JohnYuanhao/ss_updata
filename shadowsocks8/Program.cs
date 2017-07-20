@@ -1,18 +1,14 @@
 ﻿using Newtonsoft.Json;
 using Shadowsocks.Model;
+using shadowsocks8.shadowsocks8_src;
+using ShadowsUpdateService;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Web;
-using shadowsocks8.shadowsocks8_src;
-using System.Reflection;
-using System.Drawing;
 using ThoughtWorks.QRCode.Codec;
 using ThoughtWorks.QRCode.Codec.Data;
 
@@ -37,9 +33,14 @@ namespace shadowsocks8
 
         static void Main(string[] args)
         {
-            double updata_begin = 7.1;//文件版本号
-            Console.Title = "SS免费节点 shadowsocks8"+flag+"版 v" + updata_begin.ToString("0.0") + "                       by.Shadow-隐";//设置窗口标题
-            string url = "http://ss.shadowsocks8.org/";
+            Ini ini = new Ini(@".\\setting.ini");
+            bool close=ini.ReadValue("Optional", "close") != "on";
+            string url = ini.ReadValue("Necessary", "url");
+            Process processes = Process.GetCurrentProcess();
+            flag = processes.ProcessName.Replace("shadowsocks8", "").Trim();
+            
+            double updata_begin = 8;//文件版本号
+            Console.Title = "SS免费节点 shadowsocks8" + flag + "版 v" + updata_begin.ToString("0.0") + "                       by.Shadow-隐";//设置窗口标题
             AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
             try
             {
@@ -48,20 +49,21 @@ namespace shadowsocks8
                 {
                     if (MessageBox.Show("有新的版本可以更新，是否现在更新？\n\n网盘密码为1234", "更新检测", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
-                        System.Diagnostics.Process.Start("http://pan.baidu.com/s/1eSqTy18");
+                        url = web("http://123.206.189.235/updata/shadowsocks8/url.txt");
+                        System.Diagnostics.Process.Start(url);
                         return;
                     }
                 }
-                url = web("http://123.206.189.235/updata/shadowsocks8/url.txt");
+                
             }
-            catch( Exception e)
+            catch (Exception e)
             {
                 throw e;
                 Console.ReadLine();
                 return;
             }
-          
-            
+
+
 
             Console.WriteLine("========================================================");
             Console.WriteLine("===                                                  ===");
@@ -72,15 +74,17 @@ namespace shadowsocks8
             Console.WriteLine("========================================================");
             Console.WriteLine("正在获取shadowsocks8节点");
             shadowsocks8_data sh8 = new shadowsocks8_data(url);
-            if (flag == "-HK")
-            {
-                for (int i = 0; i < sh8.Shadowsocks8_ssr.Length; i++)
-                {
-                    if (write(sh8.Shadowsocks8_ssr[i][0], sh8.Shadowsocks8_ssr[i][1]) == 0)
-                        break;
-                }
-            }else
-            { 
+            //string s= sh8.target;
+            //if (flag != "")
+            //{
+            //    for (int i = 0; i < sh8.Shadowsocks8_ssr.Length; i++)
+            //    {
+            //        if (write(sh8.Shadowsocks8_ssr[i][0], sh8.Shadowsocks8_ssr[i][1]) == 0)
+            //            break;
+            //    }
+            //}
+            //else
+            //{
                 int m = 1;
                 for (int i = 0; i < sh8.Shadowsocks8_ssr.Length; i++)
                 {
@@ -92,62 +96,65 @@ namespace shadowsocks8
                         System.Threading.Thread.Sleep(500);
                     }
                 }
-
+             if (close)
+              {
                 Console.WriteLine("节点添加结束，任意键关闭该窗口");//节点名称
                 Console.ReadLine(); //让控制台暂停,否则一闪而过了   
             }
-            
-        }
-
-        public static void SaveRecord(string content)
-        {
-            if (string.IsNullOrEmpty(content)) { return; }
-            FileStream fileStream = null;
-            StreamWriter streamWriter = null;
-            try
-            { //ApplicationBace在bin文件夹下Debug文件夹，或者Realease文件夹下 
-                string path = Path.Combine(System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase, string.Format("0:yyyyMMdd", DateTime.Now));
-                using (fileStream = new FileStream(@"log.log", FileMode.Append, FileAccess.Write))
-                {
-                    using (streamWriter = new StreamWriter(fileStream))
-                    {
-                        streamWriter.WriteLine(content);
-                        if (streamWriter != null)
-                        {
-                            streamWriter.Close();
-                        }
-                    }
-                }
-                if (fileStream != null)
-                {
-                    fileStream.Close();
-                }
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public static bool write(string str)
-        {
-            string time = DateTime.Now.ToString("yyyy/M/d H:mm:ss");
-
-            try
-            {
-                using (StreamWriter sw = new StreamWriter(File.Open(@"log.log", FileMode.Create)))
-                {
-                    string error = time + "   " + str;
-                    sw.Write(error);
-                    return true;
-                }
-            }
-            catch
-            {
-                return false;
-            }
+              
+            //}
 
         }
+
+        //public static void SaveRecord(string content)
+        //{
+        //    if (string.IsNullOrEmpty(content)) { return; }
+        //    FileStream fileStream = null;
+        //    StreamWriter streamWriter = null;
+        //    try
+        //    { //ApplicationBace在bin文件夹下Debug文件夹，或者Realease文件夹下 
+        //        string path = Path.Combine(System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase, string.Format("0:yyyyMMdd", DateTime.Now));
+        //        using (fileStream = new FileStream(@"log.log", FileMode.Append, FileAccess.Write))
+        //        {
+        //            using (streamWriter = new StreamWriter(fileStream))
+        //            {
+        //                streamWriter.WriteLine(content);
+        //                if (streamWriter != null)
+        //                {
+        //                    streamWriter.Close();
+        //                }
+        //            }
+        //        }
+        //        if (fileStream != null)
+        //        {
+        //            fileStream.Close();
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw;
+        //    }
+        //}
+
+        //public static bool write(string str)
+        //{
+        //    string time = DateTime.Now.ToString("yyyy/M/d H:mm:ss");
+
+        //    try
+        //    {
+        //        using (StreamWriter sw = new StreamWriter(File.Open(@"log.log", FileMode.Create)))
+        //        {
+        //            string error = time + "   " + str;
+        //            sw.Write(error);
+        //            return true;
+        //        }
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+
+        //}
 
         /// <summary>
         /// 写入配置文件
@@ -161,20 +168,34 @@ namespace shadowsocks8
             string time = DateTime.Now.ToString("H:mm MM-dd");
             if (ssr == null)
                 return 0;
-            if (flag == "-HK")
-            {
-                if (name.IndexOf("香港") == -1)
-                {
-                    return 2;
-                }
-            }
-            else
-            {
-                if (name.IndexOf("香港") != -1)
-                {
-                    return 0;
-                }
-            }
+            //if (flag == "-HK")
+            //{
+            //    if (name.IndexOf("香港") == -1)
+            //    {
+            //        return 2;
+            //    }
+            //}
+            //else
+            //{
+            //    if (name.IndexOf("香港") != -1)
+            //    {
+            //        return 0;
+            //    }
+            //}
+            //if (flag != "")
+            //{
+            //    if (name.IndexOf(flag) == -1)
+            //    {
+            //        return 2;
+            //    }
+            //}
+            //else
+            //{
+            //    if (name.IndexOf(flag) != -1)
+            //    {
+            //        return 0;
+            //    }
+            //}
             try
             {
                 var server = new Server(ssr);//解密SS连接
@@ -225,18 +246,18 @@ namespace shadowsocks8
             catch (WebException webEx)
             {
 
-                Console.WriteLine("网址访问出现以下错误:"+webEx.Message.ToString());
+                Console.WriteLine("网址访问出现以下错误:" + webEx.Message.ToString());
                 return null;
             }
         }
 
 
-        public static void console(string str)
-        {
-            //自定义颜色
-            Console.BackgroundColor = ConsoleColor.Green;
-            Console.WriteLine(str.PadRight(Console.BufferWidth - (str.Length % Console.BufferWidth))); //设置一整行的背景色
-        }
+        //public static void console(string str)
+        //{
+        //    //自定义颜色
+        //    Console.BackgroundColor = ConsoleColor.Green;
+        //    Console.WriteLine(str.PadRight(Console.BufferWidth - (str.Length % Console.BufferWidth))); //设置一整行的背景色
+        //}
 
 
         ///// <summary>
@@ -285,7 +306,7 @@ namespace shadowsocks8
                 req.Method = "GET";
                 res = (HttpWebResponse)(req.GetResponse());
                 img = new Bitmap(res.GetResponseStream());//获取图片流        
-               // img.Save("H:\\1.png");        
+                                                          // img.Save("H:\\1.png");        
             }
 
             catch (Exception ex)

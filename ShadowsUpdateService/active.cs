@@ -180,11 +180,11 @@ namespace ShadowsUpdateService
         /// 写入公告内容
         /// </summary>
         /// <param name="str"></param>
-        //public void Add_setting(string str)
-        //{
-        //    Ini ini = new Ini(@".\\setting.ini");
-        //    ini.Writue("Message", "Say", str);
-        //}
+        public void Add_setting(string str)
+        {
+            Ini ini = new Ini(@".\\setting.ini");
+            ini.Writue("Message", "Say", str);
+        }
 
         /// <summary>
         /// 判断公告是否出现过
