@@ -47,10 +47,11 @@ namespace shadowsocks8
                 double updata_end = double.Parse(web("http://123.206.189.235/updata/shadowsocks8/shadowsocks8.txt"));
                 if (updata_begin < updata_end)
                 {
-                    if (MessageBox.Show("有新的版本可以更新，是否现在更新？\n\n网盘密码为1234", "更新检测", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    url = web("http://123.206.189.235/updata/shadowsocks8/url.txt");
+                    string[] href = url.Split();
+                    if (MessageBox.Show("有新的版本可以更新，是否现在更新？\n\n网盘密码为"+href[1], "更新检测", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                     {
-                        url = web("http://123.206.189.235/updata/shadowsocks8/url.txt");
-                        System.Diagnostics.Process.Start(url);
+                        System.Diagnostics.Process.Start(href[0]);
                         return;
                     }
                 }
