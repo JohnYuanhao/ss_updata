@@ -80,7 +80,7 @@ namespace shadowsocks8
                         break;
                 }
             }else
-            {
+            { 
                 int m = 1;
                 for (int i = 0; i < sh8.Shadowsocks8_ssr.Length; i++)
                 {
